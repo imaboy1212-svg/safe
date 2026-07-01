@@ -102,6 +102,9 @@ def build_prompt(category, fixed_title, today_str):
 - 전문가다운 신뢰감을 주면서도 일반인이 이해하기 쉽게 친절하고 직관적인 어투로 작성하세요.
 - "제가 직접 해보니", "제가 다녀와 보니" 같은 직접 경험 표현은 절대 사용하지 마세요.
 - 신뢰할 수 있는 온라인 정보와 팩트를 기반으로 체계적으로 정리한 객관적인 가이드 형태로 작성하세요.
+- 어려운 전문 용어 대신 사람들이 실제로 답답할 때 검색창에 그대로 칠 법한 쉬운 일상어를 쓰세요.
+  (예: "개인정보 유출 방지" 대신 "내 정보 새는지 확인하는 법", "악성코드 탐지" 대신 "핸드폰 이상한 앱 찾기")
+- 제목도 사람들이 실제로 검색할 때 입력하는 질문형/구어체 키워드를 그대로 담아 작성하세요.
 
 [구조 및 SEO 규칙]
 - 논리적인 흐름을 위해 <h2>와 <h3> 태그를 적극적으로 활용하세요.
@@ -121,11 +124,13 @@ def build_prompt(category, fixed_title, today_str):
 - 인사말이나 잡담 없이 첫 문단부터 바로 핵심 결론(가장 중요한 정보/해결책)을 제시
 - 본문: 단계별 해결 방법 안내, 스크린샷이 필요한 위치에는 [이곳에 (설명) 화면 캡처 삽입] 형식으로 표시
 - 요약 및 마무리: 핵심 내용 3줄 요약 및 보안 팁 강조
+- 마무리 뒤에는 사람들이 실제로 검색할 법한 쉬운 키워드로 해시태그 6~8개를 달아주세요.
 
 [출력 형식]
 반드시 아래 형식으로만 응답하세요. 다른 설명은 절대 추가하지 마세요.
 [TITLE]제목[/TITLE]
-이후 본문 HTML만 작성하세요. Markdown 기호(**, #, -, *)는 사용하지 말고 HTML 태그만 사용하세요.
+이후 본문 HTML을 작성하고, 본문 맨 마지막 줄에 [HASHTAG]#태그1 #태그2 #태그3[/HASHTAG] 형식으로 해시태그를 붙이세요.
+Markdown 기호(**, #, -, *)는 본문 안에서는 사용하지 말고 HTML 태그만 사용하세요. (해시태그 줄의 #은 예외입니다.)
 전체 글자 수는 최소 1,500자 이상이 되도록 작성하세요.
 """
     return prompt
@@ -175,11 +180,18 @@ def run_safe_labs_automation():
 
     body = re.sub(r'\[TITLE\].*?\[/TITLE\]\n?', '', blog_content, flags=re.DOTALL).strip()
 
+    hashtag_match = re.search(r'\[HASHTAG\](.*?)\[/HASHTAG\]', body, re.DOTALL)
+    hashtags = re.findall(r'#(\S+)', hashtag_match.group(1)) if hashtag_match else []
+    body = re.sub(r'\[HASHTAG\].*?\[/HASHTAG\]\n?', '', body, flags=re.DOTALL).strip()
+    if hashtags:
+        body += '\n<p>' + ' '.join(f'#{tag}' for tag in hashtags) + '</p>'
+
     print(f"📝 글 제목 -> {title}")
     print(f"🏷️ 라벨 -> {category}")
+    print(f"# 해시태그 -> {' '.join(hashtags)}")
 
     print("🌐 블로그스팟에 임시저장으로 전송하는 중...")
-    post_data = {'title': title, 'content': body, 'labels': [category]}
+    post_data = {'title': title, 'content': body, 'labels': [category] + hashtags}
     request = blogger_service.posts().insert(blogId=BLOG_ID, body=post_data, isDraft=True)
     result = request.execute()
     print("🎉 완료! 블로그스팟 관리자 페이지의 '임시 저장물' 보관함에 등록되었습니다.")
@@ -188,7 +200,8 @@ def run_safe_labs_automation():
     send_telegram(
         f"✅ <b>Safe-labs 임시저장 완료</b>\n\n"
         f"📝 제목 {title}\n"
-        f"🏷️ 라벨 {category}\n\n"
+        f"🏷️ 라벨 {category}\n"
+        f"# 해시태그 {' '.join(hashtags)}\n\n"
         f"🔗 확인 {post_url}"
     )
 
