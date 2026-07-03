@@ -50,6 +50,21 @@ AD_DISPLAY = """
 </script>
 """
 
+AD_INFEED = """
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6858780475640766"
+     crossorigin="anonymous"></script>
+<!-- 가로형 인피드 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6858780475640766"
+     data-ad-slot="5165217836"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+"""
+
 AD_MULTIPLEX = """
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6858780475640766"
      crossorigin="anonymous"></script>
@@ -65,14 +80,16 @@ AD_MULTIPLEX = """
 
 
 def insert_ads(body):
-    """첫 번째·두 번째 h2 위에 디스플레이 광고, 본문 맨 아래에 멀티플렉스 광고 삽입"""
+    """첫 번째 h2 위에 디스플레이 광고, 두 번째 h2 위에 인피드 광고, 본문 맨 아래에 멀티플렉스 광고 삽입"""
     count = 0
 
     def _prepend_ad(match):
         nonlocal count
         count += 1
-        if count <= 2:
+        if count == 1:
             return AD_DISPLAY + match.group(0)
+        if count == 2:
+            return AD_INFEED + match.group(0)
         return match.group(0)
 
     body = re.sub(r'<h2[^>]*>', _prepend_ad, body)
