@@ -119,7 +119,8 @@ def build_prompt(category, fixed_title, today_str):
   [이미지 프롬프트: (영문 설명)]
 - 이미지는 2D 픽토그램 기반의 카드뉴스(card news) 또는 2D 인포그래픽(flat 2D infographic) 스타일로만 묘사하세요. 단락 내용을 한 장으로 요약해주는 그림이어야 합니다.
 - 화려하거나 인위적인 AI 그래픽 느낌, 사실적인 사진(Realistic photo), 3D 렌더링 느낌은 배제하세요.
-- 이미지 안에 텍스트가 들어가야 한다면 고유명사(브랜드명, 제품명 등)를 제외하고는 반드시 한국어 한글(Korean Hangul)로만 표기되도록 명시하세요.
+- 이미지 안에 들어가는 모든 텍스트(제목, 라벨, 버튼, 말풍선 등)는 반드시 한국어 한글(Korean Hangul)로 표기하세요. 브랜드명·제품명·서비스명 같은 고유명사만 원어 표기를 허용합니다.
+- 이를 위해 영문 이미지 프롬프트 끝에 다음 문구를 항상 포함하세요: "All text in the image must be written in Korean Hangul only, except proper nouns like brand names. No English text."
 
 [필수 구성 요소]
 - 매력적인 클릭 유도형 메인 제목
