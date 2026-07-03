@@ -35,6 +35,50 @@ print(f"✅ Using model: {model_name}\n")
 
 TOPICS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'topics.json')
 
+AD_DISPLAY = """
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6858780475640766"
+     crossorigin="anonymous"></script>
+<!-- 디스플레이광고 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6858780475640766"
+     data-ad-slot="1825484842"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+"""
+
+AD_MULTIPLEX = """
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6858780475640766"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="autorelaxed"
+     data-ad-client="ca-pub-6858780475640766"
+     data-ad-slot="3873632172"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+"""
+
+
+def insert_ads(body):
+    """첫 번째·두 번째 h2 위에 디스플레이 광고, 본문 맨 아래에 멀티플렉스 광고 삽입"""
+    count = 0
+
+    def _prepend_ad(match):
+        nonlocal count
+        count += 1
+        if count <= 2:
+            return AD_DISPLAY + match.group(0)
+        return match.group(0)
+
+    body = re.sub(r'<h2[^>]*>', _prepend_ad, body)
+    body += AD_MULTIPLEX
+    return body
+
 
 def send_telegram(message):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
@@ -181,6 +225,7 @@ def run_safe_labs_automation():
     title = title_match.group(1).strip() if title_match else (fixed_title or "Safe-labs 보안 가이드")
 
     body = re.sub(r'\[TITLE\].*?\[/TITLE\]\n?', '', blog_content, flags=re.DOTALL).strip()
+    body = insert_ads(body)
 
     print(f"📝 글 제목 -> {title}")
     print(f"🏷️ 라벨 -> {category}")
